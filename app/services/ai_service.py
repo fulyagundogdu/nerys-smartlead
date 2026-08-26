@@ -50,4 +50,8 @@ class AIService:
 
 
 # Dosya sonunda tek bir örnek
+<<<<<<< HEAD
 ai_service = AIService()
+=======
+ai_service = AIService()
+>>>>>>> f122c8745ab048fdba590f647240a71bb603b8b0
