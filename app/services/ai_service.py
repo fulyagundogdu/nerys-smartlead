@@ -9,7 +9,7 @@ class AIServiceError(Exception):
 
 class AIService:
     def __init__(self):
-        self.api_url = "https://api.groq.com/openai/v1/chat/completions"
+        self.api_url = "https://api.groq.com/openai/v1"
         self.model = "openai/gpt-oss-120b"
 
     def _sistem_talimati(self):
