@@ -1,5 +1,5 @@
-import requests
-from flask import current_app
+from groq import Groq
+from config import Config
 
 
 class AIServiceError(Exception):
@@ -9,8 +9,13 @@ class AIServiceError(Exception):
 
 class AIService:
     def __init__(self):
-        self.api_url = "https://api.groq.com/openai/v1"
+        self.api_key = Config.GROQ_API_KEY
         self.model = "openai/gpt-oss-120b"
+
+    if self.api_key:
+        self.client= Groq(api_key=self.api_key)
+    else:
+        self.client=None
 
     def _sistem_talimati(self):
         """config.py'deki BUSINESS_CONTEXT'i okur."""
