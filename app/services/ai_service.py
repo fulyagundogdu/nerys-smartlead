@@ -19,16 +19,15 @@ class AIService:
 
     def _sistem_talimati(self):
         """config.py'deki BUSINESS_CONTEXT'i okur."""
-        return current_app.config['BUSINESS_CONTEXT']
+        return Config.BUSINESS_CONTEXT
 
     def yanit_uret(self, mesaj, gecmis=None):
         """
         Kullanici mesajini Groq'a gonderir, yaniti dondurur.
         gecmis: [{"role": "user"/"assistant", "content": "..."}] formatinda gecmis mesajlar (opsiyonel).
         """
-        api_key = current_app.config['GROQ_API_KEY']
 
-        if not api_key:
+        if not self.api_key:
             return "Demo modu: Su an yapay zeka baglantisi aktif degil. (GROQ_API_KEY tanimli degil)"
 
         if gecmis is None:
