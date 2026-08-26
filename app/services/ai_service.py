@@ -10,7 +10,7 @@ class AIServiceError(Exception):
 class AIService:
     def __init__(self):
         self.api_url = "https://api.groq.com/openai/v1/chat/completions"
-        self.model = "llama-3.1-8b-instant"
+        self.model = "openai/gpt-oss-120b"
 
     def _sistem_talimati(self):
         """config.py'deki BUSINESS_CONTEXT'i okur."""
