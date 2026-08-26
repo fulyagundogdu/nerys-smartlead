@@ -3,14 +3,14 @@ from flask import current_app
 
 
 class AIServiceError(Exception):
-    """Yapay zeka servisinde bir sorun oldugunda firlatilir."""
+    """Yapay zekâ servisinde bir sorun olduğunda fırlatılır."""
     pass
 
 
 class AIService:
     def __init__(self):
-        self.api_url = "https://api.groq.com/openai/v1/chat/completions"
-        self.model = "llama-3.1-8b-instant"
+        self.api_url = "https://api.groq.com/openai/v1/responses"
+        self.model = "openai/gpt-oss-20b"
 
     def _sistem_talimati(self):
         """config.py'deki BUSINESS_CONTEXT'i okur."""
@@ -18,22 +18,12 @@ class AIService:
 
     def yanit_uret(self, mesaj, gecmis=None):
         """
-        Kullanici mesajini Groq'a gonderir, yaniti dondurur.
-        gecmis: [{"role": "user"/"assistant", "content": "..."}] formatinda gecmis mesajlar (opsiyonel).
+        Kullanıcı mesajını Groq'a gönderir, yanıtı döndürür.
         """
         api_key = current_app.config['GROQ_API_KEY']
 
         if not api_key:
-            return "Demo modu: Su an yapay zeka baglantisi aktif degil. (GROQ_API_KEY tanimli degil)"
-
-        if gecmis is None:
-            gecmis = []
-
-        mesajlar = [
-            {"role": "system", "content": self._sistem_talimati()}
-        ] + gecmis + [
-            {"role": "user", "content": mesaj}
-        ]
+            return "Demo modu: Şu an yapay zekâ bağlantısı aktif değil. (GROQ_API_KEY tanımlı değil)"
 
         try:
             response = requests.post(
@@ -44,19 +34,20 @@ class AIService:
                 },
                 json={
                     "model": self.model,
-                    "messages": mesajlar
+                    "instructions": self._sistem_talimati(),
+                    "input": mesaj
                 },
                 timeout=15
             )
             response.raise_for_status()
             data = response.json()
-            return data["choices"][0]["message"]["content"]
+            return data["output"][0]["content"][0]["text"]
 
         except requests.exceptions.RequestException as e:
-            raise AIServiceError(f"Yapay zeka servisine ulasilamadi: {str(e)}")
+            raise AIServiceError(f"Yapay zekâ servisine ulaşılamadı: {str(e)}")
         except (KeyError, IndexError) as e:
-            raise AIServiceError(f"Yapay zeka yaniti beklenmeyen formatta: {str(e)}")
+            raise AIServiceError(f"Yapay zekâ yanıtı beklenmeyen formatta: {str(e)}")
 
 
-# Dosya sonunda tek bir ornek
+# Dosya sonunda tek bir örnek
 ai_service = AIService()
