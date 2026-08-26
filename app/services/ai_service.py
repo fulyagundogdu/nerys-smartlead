@@ -1,21 +1,26 @@
-from groq import Groq
+import os
+from openai import OpenAI
 from config import Config
 
 
 class AIServiceError(Exception):
-    """Yapay zeka servisinde bir sorun oldugunda firlatilir."""
+    """Yapay zeka servisinde bir sorun olduğunda fırlatılır."""
     pass
 
 
 class AIService:
+
     def __init__(self):
         self.api_key = Config.GROQ_API_KEY
-        self.model = "openai/gpt-oss-120b"
+        self.model = "openai/gpt-oss-20b"
 
-    if self.api_key:
-        self.client= Groq(api_key=self.api_key)
-    else:
-        self.client=None
+        if self.api_key:
+            self.client = OpenAI(
+                api_key=self.api_key,
+                base_url="https://api.groq.com/openai/v1"
+            )
+        else:
+            self.client = None
 
     def _sistem_talimati(self):
         """config.py'deki BUSINESS_CONTEXT'i okur."""
@@ -23,43 +28,57 @@ class AIService:
 
     def yanit_uret(self, mesaj, gecmis=None):
         """
-        Kullanici mesajini Groq'a gonderir, yaniti dondurur.
-        gecmis: [{"role": "user"/"assistant", "content": "..."}] formatinda gecmis mesajlar (opsiyonel).
+        Kullanıcı mesajını Groq üzerinden GPT-OSS modeline gönderir.
+
+        gecmis:
+        [
+            {"role": "user", "content": "..."},
+            {"role": "assistant", "content": "..."}
+        ]
         """
 
-        if not self.api_key:
-            return "Demo modu: Su an yapay zeka baglantisi aktif degil. (GROQ_API_KEY tanimli degil)"
+        if not self.api_key or self.client is None:
+            return (
+                "Demo modu: Şu an yapay zeka bağlantısı aktif değil. "
+                "(GROQ_API_KEY tanımlı değil)"
+            )
 
         if gecmis is None:
             gecmis = []
 
-        mesajlar = [
-            {"role": "system", "content": self._sistem_talimati()}
-        ] + gecmis + [
-            {"role": "user", "content": mesaj}
+        # Sistem talimatı + konuşma geçmişi + yeni kullanıcı mesajı
+        input_mesajlari = [
+            {
+                "role": "system",
+                "content": self._sistem_talimati()
+            }
         ]
 
-        try:
-            response = requests.post(
-                self.api_url,
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": self.model,
-                    "messages": mesajlar
-                },
-                timeout=15
-            )
-            response.raise_for_status()
-            data = response.json()
-            return data["choices"][0]["message"]["content"]
+        input_mesajlari.extend(gecmis)
 
-        except requests.exceptions.RequestException as e:
-            raise AIServiceError(f"Yapay zeka servisine ulasilamadi: {str(e)}")
-        except (KeyError, IndexError) as e:
-            raise AIServiceError(f"Yapay zeka yaniti beklenmeyen formatta: {str(e)}")
+        input_mesajlari.append(
+            {
+                "role": "user",
+                "content": mesaj
+            }
+        )
+
+        try:
+            response = self.client.responses.create(
+                model=self.model,
+                input=input_mesajlari
+            )
+
+            return response.output_text
+
+        except Exception as e:
+            raise AIServiceError(
+                f"Yapay zeka servisinde hata oluştu: {str(e)}"
+            )
+
+
+# Dosya sonunda tek bir örnek
+ai_service = AIService()
 
 
 # Dosya sonunda tek bir ornek
