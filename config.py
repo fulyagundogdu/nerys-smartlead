@@ -180,3 +180,12 @@ KESİN KURALLAR:
    İngilizce konuş.
 10. Kullanıcının sorusuyla ilgisiz cevaplar üretme.
 """
+class DevelopmentConfig(Congig):
+    DEBUG=True
+class ProductionConfig(Config):
+    DEBUG=False
+config_by_name ={
+  
+    'development': DevelopmentConfig,
+    'production': ProductionConfig
+}
