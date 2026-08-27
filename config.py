@@ -180,7 +180,7 @@ KESİN KURALLAR:
    İngilizce konuş.
 10. Kullanıcının sorusuyla ilgisiz cevaplar üretme.
 """
-class DevelopmentConfig(Congig):
+class DevelopmentConfig(Config):
     DEBUG=True
 class ProductionConfig(Config):
     DEBUG=False
