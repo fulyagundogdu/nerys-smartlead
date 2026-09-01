@@ -1,13 +1,10 @@
 from flask import Blueprint, request, jsonify, render_template
-from app.database import lead_ekle, tum_leadler
+from app.database import lead_ekle, tum_leadler, test_baslangic_ekle, test_sonuc_ekle, istatistikleri_getir
 from app.services.ai_service import ai_service, AIServiceError
 
-# Iki blueprint: biri sayfalar icin, biri API icin
 pages_bp = Blueprint('pages', __name__)
 api_bp = Blueprint('api', __name__)
 
-
-# ---- Sayfa rotalari ----
 
 @pages_bp.route('/')
 def anasayfa():
@@ -18,8 +15,6 @@ def anasayfa():
 def dashboard():
     return render_template('dashboard.html')
 
-
-# ---- API rotalari ----
 
 @api_bp.route('/sohbet', methods=['POST'])
 def sohbet():
@@ -55,3 +50,25 @@ def yeni_lead():
 @api_bp.route('/leads', methods=['GET'])
 def leadleri_getir():
     return jsonify({"basari": True, "leadler": tum_leadler()}), 200
+
+
+@api_bp.route('/test-baslangic', methods=['POST'])
+def test_baslangic():
+    test_baslangic_ekle()
+    return jsonify({"basari": True}), 201
+
+
+@api_bp.route('/test-sonuc', methods=['POST'])
+def test_sonuc():
+    data = request.get_json()
+
+    if not data or 'koleksiyon' not in data:
+        return jsonify({"basari": False, "hata": "Koleksiyon alani zorunlu"}), 400
+
+    test_sonuc_ekle(data['koleksiyon'])
+    return jsonify({"basari": True}), 201
+
+
+@api_bp.route('/istatistikler', methods=['GET'])
+def istatistikler():
+    return jsonify({"basari": True, "istatistik": istatistikleri_getir()}), 200
